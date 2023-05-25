@@ -1,0 +1,12 @@
+city_5 west=city_4
+city_6 east=city_7 north=city_1
+city_7 west=city_6 east=city_8 north=city_3
+city_8 west=city_7 east=city_9
+city_10 west=city_9 south=city_11 north=city_12
+city_2 south=city_1
+city_4 south=city_3 east=city_5
+city_9 west=city_8 east=city_10
+city_11 north=city_10
+city_12 south=city_10
+city_1 north=city_2 east=city_3 south=city_6
+city_3 west=city_1 north=city_4 south=city_7
