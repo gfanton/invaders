@@ -67,6 +67,16 @@ func TestParseInput(t *testing.T) {
 			WantCities: 4,
 		},
 		{
+			Name: "same input multiple time",
+			Input: `TestCity North=BorderCity South=BorderCity2 West=BorderCity3
+ TestCity North=BorderCity South=BorderCity2 West=BorderCity3
+ TestCity North=BorderCity South=BorderCity2 West=BorderCity3
+ TestCity North=BorderCity South=BorderCity2 West=BorderCity3
+			`,
+			WantError:  false,
+			WantCities: 4,
+		},
+		{
 			Name:       "no input",
 			Input:      "",
 			WantCities: 0,
