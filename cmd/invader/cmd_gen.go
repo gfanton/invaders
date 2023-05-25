@@ -36,7 +36,7 @@ func GenerateCommand(ctx context.Context, logger *log.Logger, cfg *GenerateConfi
 	seed := int64(crc32.ChecksumIEEE([]byte(cfg.Seed)))
 	logger.Printf("using seed %s", cfg.Seed)
 
-	// set seed
+	// Set seed
 	rand.Seed(seed)
 
 	cities := invader.NewCities()

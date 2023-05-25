@@ -155,7 +155,7 @@ func (ai *AlienInvaders) Run(ctx context.Context, limit int) error {
 		}
 	}
 
-	// log the remaining alien and their position
+	// Log the remaining alien and their position
 	ai.logger.Printf("%d/%d aliens left", len(ai.aliens)+len(trappedAliens), totalAliens)
 	for alien := range ai.aliens {
 		ai.logger.Printf("alien `%s` live in `%s`", alien.Name(), alien.CurrentCity.Name)

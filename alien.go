@@ -29,7 +29,7 @@ func NewAlien(c *City) *Alien {
 		CurrentCity: c,
 	}
 
-	// put the alien inside the city
+	// Put the alien inside the city
 	c.Alien = a
 	return a
 }
@@ -59,7 +59,7 @@ func (a *Alien) Move(dir Direction) (occupy *Alien, ok bool) {
 
 	ok = true
 
-	// replace current city
+	// Replace current city
 	a.CurrentCity = newcity
 	return
 }
@@ -73,7 +73,7 @@ func (a *Alien) RandomMove() (occupy *Alien, ok bool) {
 		return a.Move(dirs[ndir])
 	}
 
-	// not target available, should be trapped
+	// No target available, should be trapped
 	a.State = Trapped
 	return
 }

@@ -54,7 +54,6 @@ func (c *City) GetDirection(dir Direction) (city *City, ok bool) {
 func (c *City) SetDirection(dir Direction, city *City) {
 	city.borderCities[dir.Opposite()] = c
 	c.borderCities[dir] = city
-	return
 }
 
 // GetAvailableDirections returns a slice of directions that have cities.

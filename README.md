@@ -11,7 +11,6 @@ This repository is structured has follow:
 - The `cmd/invader` directory contains the application's main entry point and commands.
 - The `maps` directory contains predefined map files for the game.
 
-
 ## 🛠️ Installation
 1. Ensure that Go (v1.19 or later) is installed on your system.
 2. Run `make` in the project root directory to install the game.
@@ -33,7 +32,7 @@ specify a file instead.
 
 ```bash
 USAGE
-  invader start -alien [value] -file [path] -max_steps [value]
+  invader start -aliens [value] -file [path] -max_steps [value]
 
 FLAGS
   -aliens 4         The number of aliens that will be generated on the map
@@ -72,11 +71,12 @@ These cool enhancements could be made when time permits:
 
 * [ ] Implement a graph representation: Visualizing the movements of the aliens
       across the map could be fascinating, but it might be challenging to implement
-      or visualize in the terminal. A JavaScript interface may be more suitable for
+      or visualize in the terminal. A web interface may be more suitable for
       this.
 * [ ] Use different level of verbosity: for now, debug lecture can be difficult
       with bigger map, multiple verbosity level should help imporove debuging
-  
+* [ ] Improve simulation output for better readability
+ 
 ## Notes
 * An alternative approach to this exercise could involve making the aliens
   autonomous using goroutines and syncing them with some sort of ticker. This

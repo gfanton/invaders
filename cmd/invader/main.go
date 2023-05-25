@@ -13,11 +13,7 @@ import (
 	ffcli "github.com/peterbourgon/ff/v3/ffcli"
 )
 
-var (
-	debugMode bool
-	logger    *log.Logger
-)
-
+// RootConfig is the configuration structure for the main package.
 type RootConfig struct {
 	Debug bool
 }
@@ -27,7 +23,7 @@ var rootFlagSet = flag.NewFlagSet("invader", flag.ExitOnError)
 func parseRootConfig(args []string) (*RootConfig, error) {
 	var cfg RootConfig
 
-	rootFlagSet.BoolVar(&cfg.Debug, "debug", false, "enable debug mode")
+	rootFlagSet.BoolVar(&cfg.Debug, "debug", false, "Enable debug mode")
 
 	if err := ff.Parse(rootFlagSet, args); err != nil {
 		return nil, fmt.Errorf("unable to parse flags: %w", err)
@@ -55,6 +51,7 @@ func main() {
 
 	logger := log.New(logWriter, "debug: ", log.LstdFlags)
 
+	// Define the root command with its subcommands.
 	root := &ffcli.Command{
 		Name:    "invader [flags] <subcommand>",
 		FlagSet: rootFlagSet,

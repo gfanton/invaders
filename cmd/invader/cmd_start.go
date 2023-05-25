@@ -22,35 +22,34 @@ type StartConfig struct {
 // StartCommand begins the simulation of the alien invasion.
 func StartCommand(ctx context.Context, logger *log.Logger, cfg *StartConfig) error {
 	var err error
-	logger.Printf("start with %d aliens", cfg.NAlien)
 
 	reader := os.Stdin
 	if cfg.File != "" {
 		if reader, err = os.Open(cfg.File); err != nil {
-			return fmt.Errorf("unable to open file `%s`: %w", cfg.File, err)
+			return fmt.Errorf("Unable to open file `%s`: %w", cfg.File, err)
 		}
 
-		logger.Printf("reading `%s` file map", cfg.File)
+		logger.Printf("Reading `%s` file map", cfg.File)
 	}
 
 	ai := invader.NewAlienInvaders(logger, os.Stdout)
 
 	if err = ai.ParseMap(reader); err != nil {
-		return fmt.Errorf("unable parse the given map: %w", err)
+		return fmt.Errorf("Unable parse the given map: %w", err)
 	}
 
 	if err := ai.GenerateAliens(cfg.NAlien); err != nil {
-		return fmt.Errorf("unable generate `%d` alien: %w", cfg.NAlien, err)
+		return fmt.Errorf("Unable generate `%d` alien: %w", cfg.NAlien, err)
 	}
 
-	// run simulation
-	fmt.Printf("starting the simulation with %d aliens\n", cfg.NAlien)
+	// Run simulation
+	fmt.Printf("* Starting the simulation with %d aliens\n", cfg.NAlien)
 	err = ai.Run(ctx, cfg.StepLimit)
 	switch err {
-	case nil: // reached steps limit
+	case nil: // Reached steps limit
 		fmt.Printf("All aliens are exhausted after performing more than %d steps!\n", cfg.StepLimit)
 	case invader.ErrAllAliensAreKO:
-		fmt.Printf("all aliens have been killed/trapped!\n")
+		fmt.Printf("All aliens have been killed/trapped!\n")
 	default:
 		return err
 	}
@@ -58,6 +57,7 @@ func StartCommand(ctx context.Context, logger *log.Logger, cfg *StartConfig) err
 	logger.Print("Simulation completed!")
 
 	// Print the final state of the map.
+	fmt.Printf("* final map:\n")
 	ai.PrintMap()
 
 	return nil

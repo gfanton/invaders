@@ -86,29 +86,34 @@ func TestGenerateAliensNoMapError(t *testing.T) {
 func TestAlienExhausted(t *testing.T) {
 	ai := NewAlienInvaders(testInvaderLogger, testInvaderDefaultWriter)
 
-	reader := strings.NewReader("a north=b south=c east=d")
-	ai.ParseMap(reader)
-	ai.PrintMap()
-	ai.GenerateAliens(1)
-
 	ctx := context.Background()
 
-	err := ai.Run(ctx, 100)
+	reader := strings.NewReader("a north=b south=c east=d")
+	err := ai.ParseMap(reader)
+	require.NoError(t, err)
+
+	ai.PrintMap()
+
+	err = ai.GenerateAliens(1)
+	require.NoError(t, err)
+
+	err = ai.Run(ctx, 100)
 	require.NoError(t, err)
 	require.Len(t, ai.aliens, 1)
 }
 
 func TestAlienBattle(t *testing.T) {
 	ai := NewAlienInvaders(testInvaderLogger, testInvaderDefaultWriter)
-
-	reader := strings.NewReader("a north=b")
-	ai.ParseMap(reader)
-	ai.PrintMap()
-	ai.GenerateAliens(2)
-
 	ctx := context.Background()
 
-	err := ai.Run(ctx, 100)
+	reader := strings.NewReader("a north=b")
+	err := ai.ParseMap(reader)
+	require.NoError(t, err)
+
+	err = ai.GenerateAliens(2)
+	require.NoError(t, err)
+
+	err = ai.Run(ctx, 100)
 	require.Error(t, err)
 	require.Equal(t, ErrAllAliensAreKO, err)
 	require.Len(t, ai.aliens, 0)
