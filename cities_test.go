@@ -72,18 +72,23 @@ func TestParseInput(t *testing.T) {
 			WantCities: 0,
 		},
 		{
+			Name:       "trapped city",
+			Input:      "TestCity",
+			WantCities: 1,
+		},
+		{
 			Name:      "malformed input",
 			Input:     "TestCity North BorderCity",
 			WantError: true,
 		},
 		{
-			Name:      "malformed input #2",
-			Input:     "choucroute",
+			Name:      "unknown direction",
+			Input:     "TestCity Northeast=BorderCity",
 			WantError: true,
 		},
 		{
-			Name:      "unknown direction",
-			Input:     "TestCity Northeast=BorderCity",
+			Name:      "invalid city name",
+			Input:     "Northeast=BorderCity",
 			WantError: true,
 		},
 	}

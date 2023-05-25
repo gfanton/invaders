@@ -15,39 +15,8 @@ var (
 	testInvaderLogger        = log.New(testInvaderDefaultWriter, "", log.LstdFlags)
 )
 
-func newTestingAlienInvaders(t *testing.T) *AlienInvaders {
-	t.Helper()
-
-	// Generate cities and aliens
-	aliens := make(map[*Alien]struct{})
-	cities := NewCities()
-	{
-		city1 := NewCity("City1")
-		a1 := NewAlien(city1)
-		aliens[a1] = struct{}{}
-
-		city2 := NewCity("City2")
-		a2 := NewAlien(city2)
-		aliens[a2] = struct{}{}
-
-		city3 := NewCity("City3")
-		// no alien for city3
-
-		city1.SetDirection(North, city2)
-		city3.SetDirection(South, city2)
-		cities.Set(city1, city2, city3)
-	}
-
-	return &AlienInvaders{
-		writer: io.Discard,
-		logger: testInvaderLogger,
-		cities: cities,
-		aliens: aliens,
-	}
-}
-
 func TestParseMap(t *testing.T) {
-	ai := newTestingAlienInvaders(t)
+	ai := NewAlienInvaders(testInvaderLogger, testInvaderDefaultWriter)
 
 	reader := strings.NewReader("City1 north=City2")
 	err := ai.ParseMap(reader)
@@ -56,7 +25,7 @@ func TestParseMap(t *testing.T) {
 }
 
 func TestParseMapError(t *testing.T) {
-	ai := newTestingAlienInvaders(t)
+	ai := NewAlienInvaders(testInvaderLogger, testInvaderDefaultWriter)
 
 	reader := strings.NewReader("City1=City2")
 	err := ai.ParseMap(reader)

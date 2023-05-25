@@ -109,7 +109,7 @@ func (ai *AlienInvaders) nextIteration(ctx context.Context) (deadAliens []*Alien
 			occupyAlien.Kill()
 
 			// Destroy the city
-			targetCity.Destroy()
+			ai.cities.Destroy(targetCity.Name)
 
 			// Gather the dead aliens body for later cleanup
 			deadAliens = append(deadAliens, alien, occupyAlien)

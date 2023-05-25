@@ -26,7 +26,7 @@ func StartCommand(ctx context.Context, logger *log.Logger, cfg *StartConfig) err
 	reader := os.Stdin
 	if cfg.File != "" {
 		if reader, err = os.Open(cfg.File); err != nil {
-			return fmt.Errorf("Unable to open file `%s`: %w", cfg.File, err)
+			return fmt.Errorf("unable to open file `%s`: %w", cfg.File, err)
 		}
 
 		logger.Printf("Reading `%s` file map", cfg.File)
@@ -35,11 +35,11 @@ func StartCommand(ctx context.Context, logger *log.Logger, cfg *StartConfig) err
 	ai := invader.NewAlienInvaders(logger, os.Stdout)
 
 	if err = ai.ParseMap(reader); err != nil {
-		return fmt.Errorf("Unable parse the given map: %w", err)
+		return fmt.Errorf("unable parse the given map: %w", err)
 	}
 
 	if err := ai.GenerateAliens(cfg.NAlien); err != nil {
-		return fmt.Errorf("Unable generate `%d` alien: %w", cfg.NAlien, err)
+		return fmt.Errorf("unable generate `%d` alien: %w", cfg.NAlien, err)
 	}
 
 	// Run simulation

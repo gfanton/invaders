@@ -20,7 +20,10 @@ func (cs Cities) Get(name string) (city *City, ok bool) {
 }
 
 func (cs Cities) Destroy(name string) {
-	delete(cs, name)
+	if c, ok := cs[name]; ok {
+		c.Destroy()
+		delete(cs, name)
+	}
 }
 
 func (cs Cities) GetAll() []*City {
@@ -63,11 +66,15 @@ func (cs Cities) Parse(r io.Reader) error {
 
 		// If the line doesn't have at least two parts (a city and at least one border),
 		// then return an error
-		if len(parts) < 2 {
+		if len(parts) == 0 || len(parts) > 5 {
 			return fmt.Errorf("malformed line: %s", line)
 		}
 
 		cityName := parts[0]
+		if strings.ContainsRune(cityName, '=') {
+			return fmt.Errorf("city name cannot contain reserved '=' character")
+		}
+
 		city := cs.GetOrCreate(cityName)
 		for _, border := range parts[1:] {
 			borderParts := strings.Split(border, "=")
