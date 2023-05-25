@@ -19,6 +19,7 @@ type StartConfig struct {
 	File      string
 }
 
+// StartCommand begins the simulation of the alien invasion.
 func StartCommand(ctx context.Context, logger *log.Logger, cfg *StartConfig) error {
 	var err error
 	logger.Printf("start with %d aliens", cfg.NAlien)
@@ -32,10 +33,10 @@ func StartCommand(ctx context.Context, logger *log.Logger, cfg *StartConfig) err
 		logger.Printf("reading `%s` file map", cfg.File)
 	}
 
-	ai := invader.NewAlienInvaders(logger)
+	ai := invader.NewAlienInvaders(logger, os.Stdout)
 
 	if err = ai.ParseMap(reader); err != nil {
-		return fmt.Errorf("unable parse map: %w", err)
+		return fmt.Errorf("unable parse the given map: %w", err)
 	}
 
 	if err := ai.GenerateAliens(cfg.NAlien); err != nil {
@@ -43,18 +44,20 @@ func StartCommand(ctx context.Context, logger *log.Logger, cfg *StartConfig) err
 	}
 
 	// run simulation
+	fmt.Printf("starting the simulation with %d aliens\n", cfg.NAlien)
 	err = ai.Run(ctx, cfg.StepLimit)
 	switch err {
 	case nil: // reached steps limit
-		fmt.Printf("all aliens are exhausted by doing more than %d steps!\n", cfg.StepLimit)
-	case invader.ErrAllAliensAreDead:
-		fmt.Printf("all aliens have been killed!\n")
+		fmt.Printf("All aliens are exhausted after performing more than %d steps!\n", cfg.StepLimit)
+	case invader.ErrAllAliensAreKO:
+		fmt.Printf("all aliens have been killed/trapped!\n")
 	default:
 		return err
 	}
 
-	logger.Print("simulation is done!")
+	logger.Print("Simulation completed!")
 
+	// Print the final state of the map.
 	ai.PrintMap()
 
 	return nil
@@ -65,14 +68,17 @@ func startCommand(ctx context.Context, logger *log.Logger, rcfg *RootConfig, arg
 	cfg.RootConfig = rcfg
 
 	flagSet := flag.NewFlagSet("start", flag.ExitOnError)
-	flagSet.IntVar(&cfg.NAlien, "alien", 10, "the seed used to start the map, empty seed will be choose if empty")
-	flagSet.IntVar(&cfg.StepLimit, "max_steps", 10000, "the maximum step aliens can do before beeing exhausted")
-	flagSet.StringVar(&cfg.File, "file", "", "read the target file instead of stdin")
+	flagSet.IntVar(&cfg.NAlien, "aliens", 4, "The number of aliens that will be generated on the map")
+	flagSet.IntVar(&cfg.StepLimit, "max_steps", 10000, "The maximum number of steps an alien can perform before becoming exhausted.")
+	flagSet.StringVar(&cfg.File, "file", "", "Read from a specified file instead of the standard input.")
 
 	return &ffcli.Command{
-		Name:        "start",
-		ShortUsage:  "invader start",
-		ShortHelp:   "start invader simulation reading stdin",
+		Name:       "start",
+		ShortUsage: "invader start -alien [value] -file [path] -max_steps [value]",
+		ShortHelp:  "Start the invader simulation by reading from the standard input.",
+		LongHelp: `This subcommand initiates the Alien Invaders simulation. The
+program reads from standard input by default, but you can
+specify a file insteaad.`,
 		FlagSet:     flagSet,
 		Subcommands: []*ffcli.Command{},
 		Exec: func(ctx context.Context, args []string) error {

@@ -45,6 +45,13 @@ FLAGS
   -seed string  the seed used to generate the map, empty seed will be choose if empty
 ```
 
+## Example
+a fast way to test this program is to cumulate generate + start:
+
+```bash
+ invader generate -depth=5 | tee /dev/tty | invader start -aliens=4 
+```
+
 ## Running Tests
 To run tests, navigate to the project directory and run the following command:
 
@@ -52,5 +59,25 @@ To run tests, navigate to the project directory and run the following command:
 make test
 ```
 
+## TODO
+These cool enhancements could be made when time permits:
+
+* [ ] Implement a graph representation: Visualizing the movements of the aliens
+      across the map could be fascinating, but it might be challenging to implement
+      or visualize in the terminal. A JavaScript interface may be more suitable for
+      this.
+* [ ] Use different level of verbosity: for now, debug lecture can be difficult
+      with bigger map, multiple verbosity level should help imporove debuging
+* [ ] Decouple printing logic: It might be beneficial to decouple printing and
+      logging functionality from the simulation by using separate structures or
+      interfaces.
+  
+## Notes
+* An alternative approach to this exercise could involve making the aliens
+  autonomous using goroutines and syncing them with some sort of ticker. This
+  could potentially simplify the management of their lifecycle, but add syncing
+  complexity that's not really necessary
+* I voluntary add "trapped" message that should be mendatory for me, every *non mendatory* 
+  messages should appears in the debug mode
 
 

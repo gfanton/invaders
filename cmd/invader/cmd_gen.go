@@ -21,6 +21,7 @@ type GenerateConfig struct {
 	Seed  string
 }
 
+// GenerateCommand generates a new random city map and prints it to stdout.
 func GenerateCommand(ctx context.Context, logger *log.Logger, cfg *GenerateConfig) error {
 	if cfg.Depth <= 0 {
 		return fmt.Errorf("depth cannot be null or negative")
@@ -28,15 +29,15 @@ func GenerateCommand(ctx context.Context, logger *log.Logger, cfg *GenerateConfi
 
 	logger.Printf("generating new map of size %d", cfg.Depth)
 
-	var seed int64
-	if cfg.Seed != "" {
-		seed = int64(crc32.ChecksumIEEE([]byte(cfg.Seed)))
-		logger.Printf("using seed %s", cfg.Seed)
-	} else {
-		seed = time.Now().UnixNano()
+	if cfg.Seed == "" {
+		cfg.Seed = fmt.Sprintf("%d", time.Now().UnixNano())
 	}
 
-	rand.Seed(int64(seed))
+	seed := int64(crc32.ChecksumIEEE([]byte(cfg.Seed)))
+	logger.Printf("using seed %s", cfg.Seed)
+
+	// set seed
+	rand.Seed(seed)
 
 	cities := invader.NewCities()
 	cities.GenerateRandomCity(cfg.Depth)
@@ -49,13 +50,14 @@ func generateCommand(ctx context.Context, logger *log.Logger, rcfg *RootConfig, 
 	cfg.RootConfig = rcfg
 
 	flagSet := flag.NewFlagSet("generate", flag.ExitOnError)
-	flagSet.StringVar(&cfg.Seed, "seed", "", "the seed used to generate the map, empty seed will be choose if empty")
-	flagSet.IntVar(&cfg.Depth, "depth", 100, "the depth of the wanted map")
+	flagSet.StringVar(&cfg.Seed, "seed", "", "the seed used to generate the map; a random seed will be chosen if left empty")
+	flagSet.IntVar(&cfg.Depth, "depth", 5, "the depth of the desired map")
 
 	return &ffcli.Command{
 		Name:        "generate",
-		ShortUsage:  "invader generate",
-		ShortHelp:   "generate a new random cities with the given size",
+		ShortUsage:  "invader generate -depth [value] -seed [string]",
+		ShortHelp:   "generate a new random cities with the given depth",
+		LongHelp:    "This subcommand is used to generate a new random city map of a given depth.",
 		FlagSet:     flagSet,
 		Subcommands: []*ffcli.Command{},
 		Exec: func(ctx context.Context, args []string) error {

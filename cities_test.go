@@ -1,7 +1,6 @@
 package invader
 
 import (
-	"os"
 	"strings"
 	"testing"
 
@@ -110,7 +109,6 @@ func TestGenerateRandomCity(t *testing.T) {
 	cities := NewCities()
 	depth := 10
 	cities.GenerateRandomCity(depth)
-	cities.Print(os.Stdout)
 
 	// Check if the number of generated cities is less than or equal to depth * depth
 	require.Less(t, len(cities), depth*depth)

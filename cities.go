@@ -45,6 +45,12 @@ func (cs Cities) GetOrCreate(name string) (city *City) {
 	return
 }
 
+func (cs Cities) Set(city ...*City) {
+	for _, c := range city {
+		cs[c.Name] = c
+	}
+}
+
 // Parse method reads from an io.Reader and populates the Cities map with City structs.
 // Each line from the reader should represent a city and its bordering cities.
 // The format of each line should be: "CityName Border1=CityName Border2=CityName ..."
@@ -85,7 +91,7 @@ func (cs Cities) Parse(r io.Reader) error {
 
 			switch Direction(borderDirection) {
 			case North, South, West, East:
-				city.borderCities[dir] = borderCity
+				city.SetDirection(dir, borderCity)
 			default: // unknown direction
 				return fmt.Errorf("unknown border direction: %s for city: %s", borderDirection, borderCityName)
 			}

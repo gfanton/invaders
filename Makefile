@@ -4,11 +4,20 @@ INSTALL_DIR ?= /usr/local/bin
 go_files := $(shell find . -iname '*.go')
 bin := $(INSTALL_DIR)/$(NAME)
 
+# build
 all install: $(bin)
-clean:; rm -f $(bin)
 re: clean install
 
-.PHONY: all install clean
+# clean
+clean:; rm -f $(bin)
+
+# test
+test:; go test -v ./...
+
+# lint
+lint:;	go vet -v ./...
+
+.PHONY: all install clean re test
 
 ###
 

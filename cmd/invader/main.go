@@ -60,8 +60,8 @@ func main() {
 		FlagSet: rootFlagSet,
 		Exec:    func(_ context.Context, _ []string) error { return flag.ErrHelp },
 		Subcommands: []*ffcli.Command{
-			generateCommand(ctx, logger, rcfg, args),
 			startCommand(ctx, logger, rcfg, args),
+			generateCommand(ctx, logger, rcfg, args),
 		},
 	}
 

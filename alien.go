@@ -10,6 +10,7 @@ type AlienState int
 const (
 	Alive AlienState = iota
 	Killed
+	Trapped
 )
 
 var counterID uint
@@ -51,7 +52,8 @@ func (a *Alien) Move(dir Direction) (occupy *Alien, ok bool) {
 
 	var newcity *City
 	newcity, occupy = a.CurrentCity.MoveAlien(dir)
-	if newcity == nil { // not target available
+	if newcity == nil { // not target available, should be trapped
+		a.State = Trapped
 		return
 	}
 
@@ -70,5 +72,8 @@ func (a *Alien) RandomMove() (occupy *Alien, ok bool) {
 		ndir := rand.Intn(len(dirs))
 		return a.Move(dirs[ndir])
 	}
+
+	// not target available, should be trapped
+	a.State = Trapped
 	return
 }
