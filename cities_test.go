@@ -1,6 +1,7 @@
-package main
+package invader
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -102,5 +103,28 @@ func TestParseInput(t *testing.T) {
 			require.Len(t, cities, tc.WantCities)
 
 		})
+	}
+}
+
+func TestGenerateRandomCity(t *testing.T) {
+	cities := NewCities()
+	depth := 10
+	cities.GenerateRandomCity(depth)
+	cities.Print(os.Stdout)
+
+	// Check if the number of generated cities is less than or equal to depth * depth
+	require.Less(t, len(cities), depth*depth)
+
+	// Check if every city has at least one border city
+	for _, city := range cities {
+		hasBorder := false
+		for _, borderCity := range city.borderCities {
+			if borderCity != nil {
+				hasBorder = true
+				break
+			}
+		}
+
+		require.True(t, hasBorder)
 	}
 }

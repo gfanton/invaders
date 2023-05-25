@@ -1,9 +1,10 @@
-package main
+package invader
 
 import (
 	"bufio"
 	"fmt"
 	"io"
+	"math/rand"
 	"strings"
 )
 
@@ -92,4 +93,110 @@ func (cs Cities) Parse(r io.Reader) error {
 	}
 
 	return scanner.Err()
+}
+
+// GenerateRandomCity populates the Cities map with a collection of cities.
+// Each city is connected to one or more neighboring cities, forming a random graph.
+// The graph is organized as a square grid of a specified depth.
+func (cs Cities) GenerateRandomCity(depth int) {
+	// Initialize a square grid of pointers to City
+	table := make([][]*City, depth)
+	for y := range table {
+		table[y] = make([]*City, depth)
+	}
+
+	// Generate random starting position
+	x, y := rand.Intn(depth), rand.Intn(depth)
+
+	// Helper function to generate city name
+	var counterID int64
+	genid := func() string {
+		counterID++
+		return fmt.Sprintf("city_%d", counterID)
+	}
+
+	// Helper function to calculate new position based on direction
+	calculateNewPosition := func(dir Direction) (newx int, newy int) {
+		switch dir {
+		case North:
+			return x - 1, y
+		case South:
+			return x + 1, y
+		case East:
+			return x, y + 1
+		case West:
+			return x, y - 1
+		default:
+			return x, y
+		}
+	}
+
+	// Create root city and add it to cities map and grid
+	root := NewCity(genid())
+	cs[root.Name] = root
+	table[y][x] = root
+
+	// Initialize distance from root
+	distance := 0
+
+	// Recursive function to generate cities and connections
+	var citygen func(dir Direction, c *City)
+	citygen = func(dir Direction, c *City) {
+		// If we've reached the maximum depth, stop
+		if distance > depth {
+			return
+		}
+
+		distance++
+
+		// Remember the current position
+		oldx, oldy := x, y
+
+		// Calculate new position based on direction
+		x, y = calculateNewPosition(dir)
+
+		// If the new position is within the grid
+		if x >= 0 && x < depth && y >= 0 && y < depth {
+			// If a city already exists at the new position, connect it
+			if table[y][x] != nil {
+				c.borderCities[dir] = table[y][x]
+				table[y][x].borderCities[dir.Opposite()] = c
+			} else {
+				// Create a new city and add it to cities map and grid
+				newcity := NewCity(genid())
+				table[y][x] = newcity
+				cs[newcity.Name] = newcity
+
+				// Connect the new city
+				c.borderCities[dir] = newcity
+				newcity.borderCities[dir.Opposite()] = c
+
+				// Generate a random list of directions, with a random length of 1 or more
+				ad := make([]Direction, len(AllDirections))
+				copy(ad, AllDirections)
+				rand.Shuffle(len(ad), func(i, j int) { ad[i], ad[j] = ad[j], ad[i] })
+				ad = ad[0 : rand.Intn(len(AllDirections)-1)+1]
+
+				// Recursively generate cities in these directions
+				for _, dir := range ad {
+					citygen(dir, newcity)
+				}
+			}
+		}
+
+		distance--
+		// Return to previous position before returning
+		x, y = oldx, oldy
+	}
+
+	// Start generating cities in all directions from the root
+	for _, dir := range AllDirections {
+		citygen(dir, root)
+	}
+}
+
+func (cs Cities) Print(w io.Writer) {
+	for _, city := range cs {
+		city.Print(w)
+	}
 }

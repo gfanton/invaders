@@ -1,47 +1,74 @@
-package main
+package invader
 
 import (
 	"math/rand"
 	"strconv"
 )
 
-var counter uint64
+type AlienState int
+
+const (
+	Alive AlienState = iota
+	Killed
+)
+
+var counterID uint
 
 type Alien struct {
-	ID          uint64
+	ID          uint
 	Steps       uint
 	CurrentCity *City
-	Alive       bool
+	State       AlienState
 }
 
 func NewAlien(c *City) *Alien {
-	counter++
-	return &Alien{
-		ID:          counter,
+	counterID++
+	a := &Alien{
+		ID:          counterID,
 		CurrentCity: c,
 	}
+
+	// put the alien inside the city
+	c.Alien = a
+	return a
+}
+
+func (a *Alien) Kill() {
+	a.State = Killed
 }
 
 func (a *Alien) Name() string {
-	return strconv.FormatUint(a.ID, 10)
+	return strconv.FormatUint(uint64(a.ID), 10)
 }
 
-func (a *Alien) Move(dir Direction) (old *City, ok bool) {
-	var new *City
-	new, ok = a.CurrentCity.GetDirection(dir)
-	if !ok {
+// Move moves the Alien in a given direction. It returns a reference to an Alien
+// occupying the city in the direction of the move (if any) and a boolean indicating
+// whether the move was successful.
+func (a *Alien) Move(dir Direction) (occupy *Alien, ok bool) {
+	if a.State == Killed {
 		return
 	}
 
-	old = a.CurrentCity
-	a.CurrentCity = new
+	var newcity *City
+	newcity, occupy = a.CurrentCity.MoveAlien(dir)
+	if newcity == nil { // not target available
+		return
+	}
+
+	ok = true
+
+	// replace current city
+	a.CurrentCity = newcity
 	return
 }
 
-func (a *Alien) RandomMove() (old *City) {
+// RandomMove makes the Alien move in a random available direction.
+// It returns a reference to an Alien occupying the city in the direction of the move (if any)
+// and a boolean indicating whether the move was successful.
+func (a *Alien) RandomMove() (occupy *Alien, ok bool) {
 	if dirs := a.CurrentCity.GetAvailableDirections(); len(dirs) > 0 {
 		ndir := rand.Intn(len(dirs))
-		old, _ = a.Move(dirs[ndir])
+		return a.Move(dirs[ndir])
 	}
 	return
 }

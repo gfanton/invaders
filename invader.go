@@ -1,28 +1,27 @@
-package main
+package invader
 
 import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
-	"time"
+	"os"
 )
 
-type Options struct {
-	// iteration tick time
-	Tick time.Duration
-}
+var (
+	ErrAllAliensAreDead = fmt.Errorf("all aliens are dead")
+)
 
 type AlienInvaders struct {
-	tick   time.Duration
+	logger *log.Logger
 	cities Cities
-
-	aliens       map[*Alien]struct{}
-	aliensCities map[string] /* city name */ *Alien
+	aliens map[*Alien]struct{}
 }
 
-func NewAlienInvaders(*Options) *AlienInvaders {
+func NewAlienInvaders(logger *log.Logger) *AlienInvaders {
 	return &AlienInvaders{
+		logger: logger,
 		aliens: make(map[*Alien]struct{}),
 		cities: NewCities(),
 	}
@@ -33,7 +32,12 @@ func (ai *AlienInvaders) ParseMap(r io.Reader) error {
 		return fmt.Errorf("unable to parse map: %w", err)
 	}
 
+	ai.logger.Printf("successfully parsed %d cities", len(ai.cities))
 	return nil
+}
+
+func (ai *AlienInvaders) PrintMap() {
+	ai.cities.Print(os.Stdout)
 }
 
 func (ai *AlienInvaders) GenerateAliens(x int) error {
@@ -52,43 +56,88 @@ func (ai *AlienInvaders) GenerateAliens(x int) error {
 	for _, city := range cities {
 		alien := NewAlien(city)
 		ai.aliens[alien] = struct{}{}
-		ai.aliensCities[city.Name] = alien
 	}
 
 	return nil
 }
 
-func (ai *AlienInvaders) Iteration(ctx context.Context) error {
+func (ai *AlienInvaders) nextIteration() (deadAliens []*Alien) {
+	deadAliens = []*Alien{}
+
 	for alien := range ai.aliens {
-		// move
-		newcity := alien.CurrentCity
-		if occupy, ok := ai.aliensCities[newcity.Name]; ok {
-			// we got a fight !
-			fmt.Println("%s has been destroyed by alien %s and alien %s!", newcity.Name, alien.Name(), occupy.Name())
-
-			// cleanup
-			alien.Alive = false
-			occupy.Alive = false
-			delete(ai.aliensCities, newcity.Name)
-			delete(ai.aliens, occupy)
-			delete(ai.aliens, alien)
+		if alien.State == Killed {
+			// alien has been previously killed in this iteration, skip
+			continue
 		}
 
-		delete(ai.aliensCities, newcity.Name)
-		ai.aliensCities[newcity.Name] = alien
-		// enemy, ok := ai.aliens[alien.CurrentCity.Name]
+		currentCity := alien.CurrentCity
+
+		// make a random move
+		occupyAlien, ok := alien.RandomMove()
+		if !ok {
+			// alien has been trapped!
+			// collect it has a dead body, but we dont have to kill
+			// it, he can't move anyway
+
+			deadAliens = append(deadAliens, alien)
+
+			fmt.Printf("%s has been trapped!\n", alien.Name())
+			continue
+		}
+
+		ai.logger.Printf("alien `%s` moved from `%s` to `%s`", alien.Name(), currentCity.Name, alien.CurrentCity.Name)
+
+		// move was succefull check if someone is here
+
+		if occupyAlien != nil { // someone already here !
+			ai.logger.Printf("city `%s` already occuped by alien `%s`", occupyAlien.CurrentCity.Name, occupyAlien.Name())
+
+			targetcity := alien.CurrentCity
+
+			// we got a fight !
+
+			// mark both aliens has dead
+			alien.Kill()
+			occupyAlien.Kill()
+
+			// destroy the city
+			targetcity.Destroy()
+
+			// gather dead bodies (for later cleanup)
+			deadAliens = append(deadAliens, alien, occupyAlien)
+
+			fmt.Printf("%s has been destroyed by alien %s and alien %s!\n", targetcity.Name, alien.Name(), occupyAlien.Name())
+		}
 	}
 
-	return nil
+	return
 }
 
-func (ai *AlienInvaders) Run(ctx context.Context) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(ai.tick): // ok
+func (ai *AlienInvaders) Run(ctx context.Context, limit int) error {
+	totalAliens := len(ai.aliens)
+
+	for steps := 0; steps < limit && ctx.Err() == nil; steps++ {
+		ai.logger.Printf("iteration: %d\n", steps)
+
+		// generate next iteration, collect dead bodies
+		deadAliens := ai.nextIteration()
+
+		// cleanup dead bodies
+		for _, deadAlien := range deadAliens {
+			delete(ai.aliens, deadAlien)
 		}
 
+		if len(deadAliens) > 0 {
+			ai.logger.Printf("iteration[%d]: %d/%d aliens have been killed", steps, totalAliens-len(ai.aliens), totalAliens)
+		}
+
+		// are we done ?
+		if len(ai.aliens) == 0 {
+			return ErrAllAliensAreDead
+		}
 	}
+
+	ai.logger.Printf("%d/%d aliens left", len(ai.aliens), totalAliens)
+
+	return ctx.Err()
 }
