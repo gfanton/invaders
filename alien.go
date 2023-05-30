@@ -17,7 +17,6 @@ var counterID uint
 
 type Alien struct {
 	ID          uint
-	Steps       uint
 	CurrentCity *City
 	State       AlienState
 }
